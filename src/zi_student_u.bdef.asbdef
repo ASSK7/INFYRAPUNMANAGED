@@ -1,0 +1,67 @@
+unmanaged implementation in class zbp_i_student_u unique;
+strict ( 2 );
+
+with draft;
+
+define behavior for ZI_STUDENT_U alias Student
+//late numbering
+draft table zstudentsu_draft
+early numbering
+lock master
+total etag Lastchangedat
+authorization master ( instance )
+etag master Lastchangedat
+{
+  create;
+  update ( features : instance );
+  delete ( features : instance );
+  field ( readonly ) Studentid;
+
+  association _course { create; with draft; }
+
+  draft action Edit;
+  draft action Resume;
+  draft action Activate optimized;
+  draft action Discard;
+
+  draft determine action Prepare;
+
+  mapping for zstudents_u
+    {
+       //zstudents_u is database table name
+      Schoolname     = schoolname;
+      Studentage     = studentage;
+      Studentclass   = studentclass;
+      Studentid      = studentid;
+      Studentname    = studentname;
+      Studentsection = studentsection;
+      Status         = status;
+      Gender         = gender;
+      GenderDesc     = genderdesc;
+      Lastchangedat  = lastchangedat;
+      Fee            = fee;
+    }
+}
+
+define behavior for ZI_COURSEU alias Course
+//late numbering
+draft table ztabcourse_draft
+lock dependent by _student
+authorization dependent by _student
+etag dependent by _student
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( readonly ) Studentid, Course, Semester;
+  association _student { with draft; }
+
+  mapping for ztab_course_u
+    {
+       //ztab_course_u is DB Table
+      Course    = course;
+      Semester  = semester;
+      Semresult = semresult;
+      Studentid = studentid;
+    }
+}

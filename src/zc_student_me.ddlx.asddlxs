@@ -1,0 +1,69 @@
+@Metadata.layer: #CORE
+
+@UI.headerInfo : {
+ typeName: 'Student Detail',
+ typeNamePlural: 'Student Details',
+ title : {type: #STANDARD, label: 'Student Details', value: 'Studentid'}
+}
+annotate entity ZC_STUDENT
+    with 
+{
+
+  @UI.facet: [{ 
+        id: 'flight',
+        purpose: #STANDARD,
+        type: #IDENTIFICATION_REFERENCE,
+        label : 'Flight',
+        position: 10
+     },
+     { 
+      id : 'CourseId',  //table in object page for ZI_COURSE_U CDS VEIW
+      purpose: #STANDARD,
+      type : #LINEITEM_REFERENCE,
+      label : 'Course Details',
+      position: 20,
+      targetElement: '_course'
+     }
+     ]
+
+  @EndUserText.label: 'ID'
+  @UI : { selectionField: [{ position: 10 }], lineItem: [{ position: 10 }], identification: [{ position: 10 }]}
+  Studentid;
+  @EndUserText.label: 'Name'
+  @UI : { selectionField: [{ position: 20 }], lineItem: [{ position: 20 }], identification: [{ position: 20 }]}
+  Studentname;
+  @EndUserText.label: 'Class'
+  @UI : { selectionField: [{ position: 30 }], lineItem: [{ position: 30 }], identification: [{ position: 30 }]}
+  Studentclass;
+  @EndUserText.label: 'Age'
+  @UI : { selectionField: [{ position: 40 }], lineItem: [{ position: 40 }], identification: [{ position: 40 }]}
+  Studentage;
+  @EndUserText.label: 'Section'
+  @UI : { selectionField: [{ position: 50 }], lineItem: [{ position: 50 }], identification: [{ position: 50 }]}
+  Studentsection;
+  @EndUserText.label: 'School'
+  @UI : { selectionField: [{ position: 60 }], lineItem: [{ position: 60 }], identification: [{ position: 60 }]}
+  Schoolname;
+  @EndUserText.label: 'Status'
+  @UI : { selectionField: [{ position: 70 }], lineItem: [{ position: 70 }, { type: #FOR_ACTION , dataAction: 'setAdmitted', label : 'Set Admitted' }], 
+  identification: [{ position: 70 },{ type: #FOR_ACTION , dataAction: 'setAdmitted', label : 'Set Admitted' }] }
+  Status;
+  @EndUserText.label: 'Gender'
+  @UI : { selectionField: [{ position: 80 }], lineItem: [{ position: 80 }], identification: [{ position: 80 }] }
+  @Consumption.valueHelpDefinition: [{ additionalBinding: [{ element: 'Description' , localElement: 'GenderDesc', usage: #FILTER_AND_RESULT}], 
+  entity : { name: 'ZI_GENDER_U', element: 'Value' }, 
+  distinctValues: true }]
+  Gender;
+  @EndUserText.label: 'Gender Description'
+  @UI : { selectionField: [{ position: 90 }], lineItem: [{ position: 90 }], identification: [{ position: 90 }] }
+  GenderDesc;
+  @EndUserText.label: 'Last Changed At'
+  @UI.hidden: true
+  Lastchangedat;
+  @UI : { lineItem: [{ position: 100 }], identification: [{ position: 100 }] }
+  @EndUserText : { label: 'Fee' }
+  @Search.defaultSearchElement: true
+  Fee;
+  
+
+}

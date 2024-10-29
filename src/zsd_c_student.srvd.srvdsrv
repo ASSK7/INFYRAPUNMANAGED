@@ -1,0 +1,5 @@
+@EndUserText.label: 'Service Definition for Projection CDS View'
+define service ZSD_C_STUDENT {
+  expose ZC_STUDENT;
+  expose ZC_COURSEU;
+}

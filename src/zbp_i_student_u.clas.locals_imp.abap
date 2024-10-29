@@ -45,6 +45,16 @@ CLASS lhc_Student IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD earlynumbering_create.
+
+    zcl_students_api_clas=>get_instance(  )->create_student_early_numbering(
+      EXPORTING
+        entities = entities
+      CHANGING
+        mapped   = mapped
+        failed   = failed
+        reported = reported
+    ).
+
   ENDMETHOD.
 
   METHOD update.

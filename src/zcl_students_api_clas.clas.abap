@@ -98,7 +98,7 @@ CLASS zcl_students_api_clas IMPLEMENTATION.
 *
 *    ENDLOOP.
 
-**********************     NEW SYNTAX        ************************
+**********************     NEW SYNTAX        *************************
 
     mapped = VALUE #(
         student = VALUE #(

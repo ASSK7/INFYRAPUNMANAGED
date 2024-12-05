@@ -26,7 +26,7 @@ etag master Lastchangedat
 
   draft determine action Prepare;
 
-  mapping for zstudents_u
+  mapping for zstudents_u control zstr_students   //Control Structure indicates which fields are changed in UPDATE. ZSTR_STUDENTS is the structure of boolean type.
     {
        //zstudents_u is database table name
       Schoolname     = schoolname;

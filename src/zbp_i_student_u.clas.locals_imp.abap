@@ -68,12 +68,32 @@ CLASS lhc_Student IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD update.
+
+  zcl_students_api_clas=>get_instance(  )->update_student(
+    EXPORTING
+      entities = entities
+    CHANGING
+      mapped   = mapped
+      failed   = failed
+      reported = reported
+  ).
+
   ENDMETHOD.
 
   METHOD delete.
   ENDMETHOD.
 
   METHOD read.
+
+    zcl_students_api_clas=>get_instance(  )->read_student(
+      EXPORTING
+        keys     = keys
+      CHANGING
+        result   = result
+        failed   = failed
+        reported = reported
+    ).
+
   ENDMETHOD.
 
   METHOD lock.

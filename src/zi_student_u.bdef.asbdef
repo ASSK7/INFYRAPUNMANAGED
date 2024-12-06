@@ -45,6 +45,7 @@ etag master Lastchangedat
 
 define behavior for ZI_COURSEU alias Course
 //late numbering
+early numbering
 draft table ztabcourse_draft
 lock dependent by _student
 authorization dependent by _student

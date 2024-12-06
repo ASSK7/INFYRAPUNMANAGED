@@ -64,6 +64,8 @@ annotate entity ZC_STUDENT
   @EndUserText : { label: 'Fee' }
   @Search.defaultSearchElement: true
   Fee;
+ 
+  
   
 
 }

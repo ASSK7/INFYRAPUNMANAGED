@@ -16,7 +16,10 @@ CLASS zcl_students_api_clas DEFINITION
             tt_read_result     TYPE TABLE FOR READ RESULT zi_student_u,
 
             "update
-            tt_update_entities TYPE TABLE FOR UPDATE zi_student_u.
+            tt_update_entities TYPE TABLE FOR UPDATE zi_student_u,
+
+            "cba
+            tt_create_course   TYPE TABLE FOR CREATE zi_student_u\\student\_course.
 
 
     CLASS-METHODS : get_instance RETURNING VALUE(ro_instance) TYPE REF TO zcl_students_api_clas.
@@ -45,6 +48,18 @@ CLASS zcl_students_api_clas DEFINITION
                               CHANGING  mapped   TYPE tt_mapped_early  "response for mapped early zi_student_u  [ derived type... ]
                                         failed   TYPE tt_response_early "response for failed early zi_student_u  [ derived type... ]
                                         reported TYPE tt_reported_early. "response for reported early zi_student_u
+
+
+    "CREATE BY ASSOCIATION
+    METHODS : cba_course_earlynumbering  IMPORTING entities TYPE tt_create_course "table for create zi_student_u\\student\_course  [ derived type... ]
+                                         CHANGING  mapped   TYPE tt_mapped_early "response for mapped early zi_student_u  [ derived type... ]
+                                                   failed   TYPE tt_response_early " response for failed early zi_student_u  [ derived type... ]
+                                                   reported TYPE tt_reported_early. "response for reported early zi_student_u
+
+    METHODS : cba_create_courese  IMPORTING entities_cba TYPE tt_create_course "table for create zi_student_u\\student\_course  [ derived type... ]
+                                  CHANGING  mapped       TYPE tt_mapped_early "response for mapped early zi_student_u  [ derived type... ]
+                                            failed       TYPE tt_response_early "response for failed early zi_student_u  [ derived type... ]
+                                            reported     TYPE tt_reported_early. "response for reported early zi_student_u
 
 
 
@@ -138,6 +153,10 @@ CLASS zcl_students_api_clas IMPLEMENTATION.
       MODIFY zstudents_u FROM TABLE @gt_students.
     ENDIF.
 
+    IF gt_course[] IS NOT INITIAL.
+      MODIFY ztab_course_u FROM TABLE @gt_course.
+    ENDIF.
+
   ENDMETHOD.
 
   METHOD read_student.
@@ -158,24 +177,24 @@ CLASS zcl_students_api_clas IMPLEMENTATION.
   METHOD update_student.
 
     "Declaring the Internal table of DB Table and Control Structure
-    DATA : lt_student TYPE STANDARD TABLE OF zstudents_u, "internal table of actual db table type
-           lt_cx_student type STANDARD TABLE OF zstr_students. "internal table of  control structure
+    DATA : lt_student    TYPE STANDARD TABLE OF zstudents_u, "internal table of actual db table type
+           lt_cx_student TYPE STANDARD TABLE OF zstr_students. "internal table of  control structure
 
     lt_student = CORRESPONDING #( entities MAPPING FROM ENTITY ). "reading the data coming from UI
     lt_cx_student = CORRESPONDING #( entities MAPPING FROM ENTITY USING CONTROL ).  "readig control structure data to identify which fields are changed on UI
 
-    IF lt_student is not INITIAL.
+    IF lt_student IS NOT INITIAL.
 
-        SELECT * FROM zstudents_u
-        FOR ALL ENTRIES IN @lt_student
-        WHERE studentid = @lt_student-studentid
-        INTO TABLE @DATA(lt_student_old).
+      SELECT * FROM zstudents_u
+      FOR ALL ENTRIES IN @lt_student
+      WHERE studentid = @lt_student-studentid
+      INTO TABLE @DATA(lt_student_old).
 
     ENDIF.
 
     gt_students = VALUE #(
 
-        FOR X = 1 WHILE X <= lines( lt_student )
+        FOR x = 1 WHILE x <= lines( lt_student )
 
         LET
             ls_control_flag = VALUE #( lt_cx_student[ x ] OPTIONAL )
@@ -204,6 +223,57 @@ CLASS zcl_students_api_clas IMPLEMENTATION.
 
      ).
 
+  ENDMETHOD.
+
+  METHOD cba_course_earlynumbering.
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<fs_entity>).
+
+      LOOP AT <fs_entity>-%target ASSIGNING FIELD-SYMBOL(<fs_course>).
+        mapped-course = VALUE #( (
+            %cid = <fs_course>-%cid
+            %is_draft = <fs_course>-%is_draft
+            %key = <fs_course>-%key
+
+         ) ) .
+      ENDLOOP.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD cba_create_courese.
+    gt_course = VALUE #(
+
+        FOR ls_cba_entities IN entities_cba
+            FOR ls_course_cba IN ls_cba_entities-%target
+                LET
+                    ls_course = CORRESPONDING ztab_course_u(    "ztab_course_u is table name
+                        ls_course_cba MAPPING FROM ENTITY
+                     )
+                IN
+                (
+                    ls_course
+                 )
+     ).
+
+    mapped = VALUE #(
+        course = VALUE #(
+            FOR i = 1 WHILE i <= lines( entities_cba )
+                LET lt_courses = VALUE #( entities_cba[ i ]-%target OPTIONAL )
+            IN
+                FOR j = 1 WHILE j <= lines( lt_courses )
+                LET ls_courses = VALUE #( lt_courses[ j  ] OPTIONAL )
+                IN
+                (
+                    %cid = ls_courses-%cid
+                    %is_draft = ls_courses-%is_draft
+                    %key = ls_courses-%key
+
+                 )
+         )
+
+     ).
   ENDMETHOD.
 
 ENDCLASS.

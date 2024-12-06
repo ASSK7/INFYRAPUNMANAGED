@@ -25,11 +25,14 @@ CLASS lhc_Student DEFINITION INHERITING FROM cl_abap_behavior_handler.
     METHODS lock FOR LOCK
       IMPORTING keys FOR LOCK Student.
 
-    METHODS rba_Course FOR READ
+    METHODS rba_Course FOR READ  "rba - read by association
       IMPORTING keys_rba FOR READ Student\_Course FULL result_requested RESULT result LINK association_links.
 
-    METHODS cba_Course FOR MODIFY
+    METHODS cba_Course FOR MODIFY  "cba - create by association
       IMPORTING entities_cba FOR CREATE Student\_Course.
+
+    METHODS earlynumbering_cba_Course FOR NUMBERING
+      IMPORTING entities FOR CREATE Student\_Course.
 
 ENDCLASS.
 
@@ -102,7 +105,29 @@ CLASS lhc_Student IMPLEMENTATION.
   METHOD rba_Course.
   ENDMETHOD.
 
-  METHOD cba_Course.
+  METHOD cba_Course. "method for create by association to create child entities
+
+     zcl_students_api_clas=>get_instance(  )->cba_create_courese(
+       EXPORTING
+         entities_cba = entities_cba
+       CHANGING
+         mapped       = mapped
+         failed       = failed
+         reported     = reported
+     ).
+
+  ENDMETHOD.
+
+  METHOD earlynumbering_cba_Course.
+
+    zcl_students_api_clas=>get_instance(  )->cba_course_earlynumbering(
+      EXPORTING
+        entities = entities
+      CHANGING
+        mapped   = mapped
+        failed   = failed
+        reported = reported
+    ).
   ENDMETHOD.
 
 ENDCLASS.

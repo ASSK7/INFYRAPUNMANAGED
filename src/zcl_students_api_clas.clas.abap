@@ -19,7 +19,10 @@ CLASS zcl_students_api_clas DEFINITION
             tt_update_entities TYPE TABLE FOR UPDATE zi_student_u,
 
             "cba
-            tt_create_course   TYPE TABLE FOR CREATE zi_student_u\\student\_course.
+            tt_create_course   TYPE TABLE FOR CREATE zi_student_u\\student\_course,
+
+            "delete
+            tt_delete_student  TYPE TABLE FOR DELETE zi_student_u\\student.
 
 
     CLASS-METHODS : get_instance RETURNING VALUE(ro_instance) TYPE REF TO zcl_students_api_clas.
@@ -61,14 +64,19 @@ CLASS zcl_students_api_clas DEFINITION
                                             failed       TYPE tt_response_early "response for failed early zi_student_u  [ derived type... ]
                                             reported     TYPE tt_reported_early. "response for reported early zi_student_u
 
+    METHODS : delete_student IMPORTING keys     TYPE tt_delete_student "table for delete zi_student_u\\student  [ derived type... ]
+                             CHANGING  mapped   TYPE tt_mapped_early "response for mapped early zi_student_u  [ derived type... ]
+                                       failed   TYPE tt_response_early "response for failed early zi_student_u  [ derived type... ]
+                                       reported TYPE tt_reported_early. " response for reported early zi_student_u
 
 
   PROTECTED SECTION.
 
-    CLASS-DATA : mo_instance TYPE REF TO zcl_students_api_clas,
-                 gt_students TYPE STANDARD TABLE OF zstudents_u,
-                 gt_course   TYPE STANDARD TABLE OF ztab_course_u,
-                 gs_mapped   TYPE tt_mapped_early.
+    CLASS-DATA : mo_instance    TYPE REF TO zcl_students_api_clas,
+                 gt_students    TYPE STANDARD TABLE OF zstudents_u,
+                 gt_course      TYPE STANDARD TABLE OF ztab_course_u,
+                 gs_mapped      TYPE tt_mapped_early,
+                 gt_so_students TYPE RANGE OF zstudents_u-studentid.
 
   PRIVATE SECTION.
 ENDCLASS.
@@ -149,12 +157,16 @@ CLASS zcl_students_api_clas IMPLEMENTATION.
 
   METHOD save_student.
 
-    IF gt_students[] IS NOT INITIAL.
+    IF gt_students[] IS NOT INITIAL.  "for parent creation
       MODIFY zstudents_u FROM TABLE @gt_students.
     ENDIF.
 
-    IF gt_course[] IS NOT INITIAL.
+    IF gt_course[] IS NOT INITIAL.  "for child creation
       MODIFY ztab_course_u FROM TABLE @gt_course.
+    ENDIF.
+
+    IF gt_so_students[] IS NOT INITIAL. "for delete
+      DELETE FROM zstudents_u WHERE studentid IN @gt_so_students.
     ENDIF.
 
   ENDMETHOD.
@@ -274,6 +286,23 @@ CLASS zcl_students_api_clas IMPLEMENTATION.
          )
 
      ).
+  ENDMETHOD.
+
+  METHOD delete_student.
+    DATA : lt_students TYPE STANDARD TABLE OF zstudents_u.
+    lt_students = CORRESPONDING #( keys MAPPING FROM ENTITY ).
+
+    gt_so_students = VALUE #(
+
+            FOR ls_student IN lt_students
+            (
+            sign = 'I'
+            option = 'EQ'
+            low = ls_student-studentid
+            )
+     ) .
+
+
   ENDMETHOD.
 
 ENDCLASS.

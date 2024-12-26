@@ -72,26 +72,26 @@ CLASS lhc_Student IMPLEMENTATION.
 
   METHOD update.
 
-  zcl_students_api_clas=>get_instance(  )->update_student(
-    EXPORTING
-      entities = entities
-    CHANGING
-      mapped   = mapped
-      failed   = failed
-      reported = reported
-  ).
+    zcl_students_api_clas=>get_instance(  )->update_student(
+      EXPORTING
+        entities = entities
+      CHANGING
+        mapped   = mapped
+        failed   = failed
+        reported = reported
+    ).
 
   ENDMETHOD.
 
   METHOD delete.
-     zcl_students_api_clas=>get_instance(  )->delete_student(
-       EXPORTING
-         keys     = keys
-       CHANGING
-         mapped   = mapped
-         failed   = failed
-         reported = reported
-     ).
+    zcl_students_api_clas=>get_instance(  )->delete_student(
+      EXPORTING
+        keys     = keys
+      CHANGING
+        mapped   = mapped
+        failed   = failed
+        reported = reported
+    ).
   ENDMETHOD.
 
   METHOD read.
@@ -108,6 +108,48 @@ CLASS lhc_Student IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD lock.
+    " 1. First lock object should be create by right clicking on data dictionary in package, give the primary table name to which we want to create lock
+    " 2. Select lock mode and activate
+
+    TRY.
+        "getting the instance of the lock object which was created by us
+        DATA(lo_lockObj) = cl_abap_lock_object_factory=>get_instance( iv_name = 'EZCUSTOM_LOCK' ).  "EZCUSTOM_LOCK is lock object name
+
+      CATCH cx_abap_lock_failure INTO DATA(lo_exception).
+        RAISE SHORTDUMP lo_exception.
+    ENDTRY.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<fs_key>).
+
+      TRY.
+          lo_lockobj->enqueue(
+*          it_table_mode =
+            it_parameter  = VALUE #( ( name = 'STUDENTID' value = REF #( <fs_key>-Studentid ) ) )
+*          _scope        =
+*          _wait         =
+          ).
+        CATCH cx_abap_foreign_lock INTO DATA(foreign_lock).
+
+          APPEND VALUE #(
+             studentid = keys[ 1 ]-Studentid
+             %msg = new_message_with_text(
+                  severity = if_abap_behv_message=>severity-error
+                  text = 'Record is locked by ' && foreign_lock->user_name
+               )
+           ) TO reported-student.
+
+          APPEND VALUE #(
+            studentid = keys[ 1 ]-Studentid
+          ) TO failed-student.
+
+        CATCH cx_abap_lock_failure INTO DATA(lock_failure).
+          RAISE SHORTDUMP lock_failure.
+
+      ENDTRY.
+
+    ENDLOOP.
+
+
   ENDMETHOD.
 
   METHOD rba_Course.
@@ -115,14 +157,14 @@ CLASS lhc_Student IMPLEMENTATION.
 
   METHOD cba_Course. "method for create by association to create child entities
 
-     zcl_students_api_clas=>get_instance(  )->cba_create_courese(
-       EXPORTING
-         entities_cba = entities_cba
-       CHANGING
-         mapped       = mapped
-         failed       = failed
-         reported     = reported
-     ).
+    zcl_students_api_clas=>get_instance(  )->cba_create_courese(
+      EXPORTING
+        entities_cba = entities_cba
+      CHANGING
+        mapped       = mapped
+        failed       = failed
+        reported     = reported
+    ).
 
   ENDMETHOD.
 

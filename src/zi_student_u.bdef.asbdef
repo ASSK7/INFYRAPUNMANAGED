@@ -24,11 +24,19 @@ etag master Lastchangedat
   draft action Activate optimized;
   draft action Discard;
 
-  draft determine action Prepare;
+  field ( mandatory ) studentname, Studentage;
+  validation validatefields on save { create; update; }
+  draft determine action Prepare  //Prepare is standard name
+  {
+    validation validatefields;
+  }
 
-  mapping for zstudents_u control zstr_students   //Control Structure indicates which fields are changed in UPDATE. ZSTR_STUDENTS is the structure of boolean type.
+//  draft determine action Prepare - executes Determinations and Actions, used to validate the draft data before saving in draft table
+
+  mapping for zstudents_u control zstr_students //control structure indicates which fields are changed in update. zstr_students is the structure of boolean type.
     {
-       //zstudents_u is database table name
+
+      //zstudents_u is database table name
       Schoolname     = schoolname;
       Studentage     = studentage;
       Studentclass   = studentclass;
@@ -59,7 +67,8 @@ etag dependent by _student
 
   mapping for ztab_course_u
     {
-       //ztab_course_u is DB Table
+
+      //ztab_course_u is DB Table
       Course    = course;
       Semester  = semester;
       Semresult = semresult;

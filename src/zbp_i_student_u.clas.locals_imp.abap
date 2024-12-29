@@ -30,6 +30,8 @@ CLASS lhc_Student DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS cba_Course FOR MODIFY  "cba - create by association
       IMPORTING entities_cba FOR CREATE Student\_Course.
+    METHODS validatefields FOR VALIDATE ON SAVE
+      IMPORTING keys FOR Student~validatefields.
 
     METHODS earlynumbering_cba_Course FOR NUMBERING
       IMPORTING entities FOR CREATE Student\_Course.
@@ -178,6 +180,65 @@ CLASS lhc_Student IMPLEMENTATION.
         failed   = failed
         reported = reported
     ).
+  ENDMETHOD.
+
+  METHOD validatefields.
+
+  "reading the data based on keys
+   READ ENTITIES OF zi_student_u "ENTITY NAME
+   IN LOCAL MODE
+   ENTITY Student
+   ALL FIELDS WITH CORRESPONDING #( keys )
+   RESULT  DATA(lt_results)
+   FAILED DATA(lt_failed)
+   REPORTED DATA(lt_reported).
+
+   "As for create/update, we are reading one records so READ Table syntax with index used below
+   READ TABLE lt_results ASSIGNING FIELD-SYMBOL(<fs_result>) INDEX 1.
+
+   IF <fs_result> IS ASSIGNED.
+   IF <fs_result>-Studentname IS INITIAL OR <fs_result>-Studentage IS INITIAL.
+    APPEND VALUE #( %tky = <fs_result>-%tky ) TO failed-student.
+    "below syntax also be used
+    "failed-student = VALUE #( ( %tky = <fs_result>-%tky ) ).
+
+    "below code is to remove duplicate messages
+    reported-student = VALUE #(
+        ( %tky = <fs_result>-%tky  %state_area = 'VALIDATE_NAME' )
+        ( %tky = <fs_result>-%tky  %state_area = 'VALIDATE_AGE' )
+     ).
+
+
+
+    IF <fs_result>-Studentname IS INITIAL.
+    reported-student =  VALUE #( (   %tky = <fs_result>-%tky
+                    %element-studentname = if_abap_behv=>mk-on
+*                    %state_area = 'VALIDATE_NAME'   "we can give any state area name here
+                    %msg = new_message(
+                             id       = 'SY'
+                             number   = '002'
+                             severity = if_abap_behv_message=>severity-error
+                             v1       = 'First Name should not be empty!') ) ).
+    ENDIF.
+
+    IF <fs_result>-Studentage IS INITIAL.
+        reported-student =  VALUE #( BASE reported-student ( %tky = <fs_result>-%tky   "BASE reported-student -> get all the messages instead of last appended message
+                    %element-studentage = if_abap_behv=>mk-on
+*                    %state_area = 'VALIDATE_AGE'
+                    %msg = new_message(
+                             id       = 'SY'
+                             number   = '002'
+                             severity = if_abap_behv_message=>severity-error
+                             v1       = 'Age should not be empty!') ) ).
+    ENDIF.
+
+   ENDIF.
+
+   ENDIF.
+
+
+
+
   ENDMETHOD.
 
 ENDCLASS.

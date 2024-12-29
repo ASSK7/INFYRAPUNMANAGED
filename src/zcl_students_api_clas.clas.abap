@@ -25,6 +25,9 @@ CLASS zcl_students_api_clas DEFINITION
             tt_delete_student  TYPE TABLE FOR DELETE zi_student_u\\student.
 
 
+     CLASS-DATA : gt_students    TYPE STANDARD TABLE OF zstudents_u.
+
+
     CLASS-METHODS : get_instance RETURNING VALUE(ro_instance) TYPE REF TO zcl_students_api_clas.
 
     "method for creating ID in early numbering for UNMANAGED SCENARIO
@@ -73,7 +76,6 @@ CLASS zcl_students_api_clas DEFINITION
   PROTECTED SECTION.
 
     CLASS-DATA : mo_instance    TYPE REF TO zcl_students_api_clas,
-                 gt_students    TYPE STANDARD TABLE OF zstudents_u,
                  gt_course      TYPE STANDARD TABLE OF ztab_course_u,
                  gs_mapped      TYPE tt_mapped_early,
                  gt_so_students TYPE RANGE OF zstudents_u-studentid.

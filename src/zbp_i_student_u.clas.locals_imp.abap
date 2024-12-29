@@ -236,6 +236,29 @@ CLASS lsc_ZI_STUDENT_U IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD check_before_save.
+  "if failed has any entry, then cleanup_finalize method will be called automatically
+
+   data gt_students_tmp TYPE STANDARD TABLE OF zstudents_u.
+
+   gt_students_tmp = zcl_students_api_clas=>gt_students.
+
+   IF gt_students_tmp is not initial.
+
+    LOOP at gt_students_tmp ASSIGNING FIELD-SYMBOL(<ls_student>).
+
+        if <ls_student>-studentage > 21.
+            APPEND VALUE #( studentid = <ls_student>-studentid ) TO failed-student.
+            APPEND VALUE #( studentid = <ls_student>-studentid
+                            %msg      = new_message_with_text(
+                                            severity = if_abap_behv_message=>severity-error
+                                            text     = 'Student age should not be greater than 21' )
+
+            ) TO reported-student.
+        ENDIF.
+    ENDLOOP.
+
+   ENDIF.
+
   ENDMETHOD.
 
   METHOD save.

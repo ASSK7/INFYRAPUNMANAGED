@@ -8,7 +8,7 @@ define behavior for ZI_STUDENT_U alias Student
 draft table zstudentsu_draft
 early numbering
 lock master
-total etag Lastchangedat
+total etag Lastchangedat  //used only with draft enabled
 authorization master ( instance )
 etag master Lastchangedat
 {

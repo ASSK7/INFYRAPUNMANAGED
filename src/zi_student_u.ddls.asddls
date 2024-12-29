@@ -14,6 +14,7 @@ composition[0..*] of ZI_COURSEU as _course
     schoolname as Schoolname,
     status as Status,
     gender as Gender,
+    @Semantics.systemDateTime.localInstanceLastChangedAt: true   //this enables the etag
     lastchangedat as Lastchangedat,
     fee as Fee,
     

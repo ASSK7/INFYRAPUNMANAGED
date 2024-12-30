@@ -32,6 +32,11 @@ CLASS lhc_Student DEFINITION INHERITING FROM cl_abap_behavior_handler.
       IMPORTING entities_cba FOR CREATE Student\_Course.
     METHODS validatefields FOR VALIDATE ON SAVE
       IMPORTING keys FOR Student~validatefields.
+    METHODS updateSectionBasedOnClass FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR Student~updateSectionBasedOnClass.
+
+    METHODS updateSchoolBasedOnSection FOR DETERMINE ON SAVE
+      IMPORTING keys FOR Student~updateSchoolBasedOnSection.
 
     METHODS earlynumbering_cba_Course FOR NUMBERING
       IMPORTING entities FOR CREATE Student\_Course.
@@ -238,6 +243,72 @@ CLASS lhc_Student IMPLEMENTATION.
 
 
 
+
+  ENDMETHOD.
+
+  METHOD updateSectionBasedOnClass.
+
+  "reading the entity
+  READ ENTITIES OF zi_student_u
+  IN LOCAL MODE
+  ENTITY Student
+  FIELDS ( Studentclass )
+  WITH CORRESPONDING #( keys )
+  RESULT DATA(lt_student).
+
+  "updating the value based on student class field
+  READ TABLE lt_student ASSIGNING FIELD-SYMBOL(<fs_student>) INDEX 1. "as getting only one record in table, I'm using read table. we can use loop also.
+  TRANSLATE <fs_student>-Studentclass to UPPER CASE.
+
+  IF <fs_student>-Studentclass EQ 'INTERMEDIATE'.
+
+    MODIFY ENTITIES OF zi_student_u
+    IN LOCAL MODE
+    ENTITY Student
+    UPDATE FIELDS ( Studentsection )
+    WITH VALUE #( ( %tky = <fs_student>-%tky  Studentsection = 1 ) ) .
+
+
+  ELSEIF <fs_student>-Studentclass EQ 'DIPLAMO'.
+    MODIFY ENTITIES OF zi_student_u
+    IN LOCAL MODE
+    ENTITY Student
+    UPDATE FIELDS ( Studentsection )
+    WITH VALUE #( ( %tky = <fs_student>-%tky  Studentsection = 4 ) ) .
+  ENDIF.
+
+  ENDMETHOD.
+
+  METHOD updateSchoolBasedOnSection.
+
+   "reading the entity
+  READ ENTITIES OF zi_student_u
+  IN LOCAL MODE
+  ENTITY Student
+  FIELDS ( Studentsection )
+  WITH CORRESPONDING #( keys )
+  RESULT DATA(lt_student).
+
+  "updating the value based on student class field
+  READ TABLE lt_student ASSIGNING FIELD-SYMBOL(<fs_student>) INDEX 1. "as getting only one record in table, I'm using read table. we can use loop also.
+  TRANSLATE <fs_student>-Studentclass to UPPER CASE.
+
+  IF <fs_student>-Studentsection EQ 1.
+
+    MODIFY ENTITIES OF zi_student_u
+    IN LOCAL MODE
+    ENTITY Student
+    UPDATE FIELDS ( Schoolname )
+    WITH VALUE #( ( %tky = <fs_student>-%tky  Schoolname = 'LPU' ) ) .
+
+
+  ELSEIF <fs_student>-Studentclass EQ 'DIPLAMO'.
+    MODIFY ENTITIES OF zi_student_u
+    IN LOCAL MODE
+    ENTITY Student
+    UPDATE FIELDS ( Schoolname )
+    WITH VALUE #( ( %tky = <fs_student>-%tky  Schoolname = 'KLU' ) ) .
+  ENDIF.
 
   ENDMETHOD.
 

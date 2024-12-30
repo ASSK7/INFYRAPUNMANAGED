@@ -25,10 +25,23 @@ etag master Lastchangedat
   draft action Discard;
 
   field ( mandatory ) studentname, Studentage;
-  validation validatefields on save { create; update; }
+
+  validation validatefields on save { create; update; }  //validations
+  //Determinations - if you want to change the value of one field based on other field then Determinations will be used
+  // Determinations will be used on - ON MODIFY, ON SAVE
+  //If you use determinations with ON SAVE then determinations should be added in draft determine action Prepare
+  //If you used determinatinos with ON MODIFY then determination name no need to add in draft determine action Prepare
+  //If you want to change the value in live mode then Determinations(ON MODIFY) +  Side effects will be used
+  // In Projection view also add - use side effects syntax
+  determination updateSectionBasedOnClass on modify { field Studentclass; }  //determination with ON MODIFY
+  side effects { field Studentclass affects field Studentsection ; }  // Side effects used to update field value immediatly on screen
+
+  determination updateSchoolBasedOnSection on save { field Studentsection; }  // determination with ON SAVE- now this needs to added in draft determine action Prepare
+
   draft determine action Prepare  //Prepare is standard name
   {
     validation validatefields;
+    determination updateSchoolBasedOnSection;
   }
 
 //  draft determine action Prepare - executes Determinations and Actions, used to validate the draft data before saving in draft table

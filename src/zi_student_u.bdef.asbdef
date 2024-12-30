@@ -34,7 +34,7 @@ etag master Lastchangedat
   //If you want to change the value in live mode then Determinations(ON MODIFY) +  Side effects will be used
   // In Projection view also add - use side effects syntax
   determination updateSectionBasedOnClass on modify { field Studentclass; }  //determination with ON MODIFY
-  side effects { field Studentclass affects field Studentsection ; }  // Side effects used to update field value immediatly on screen
+  side effects { field Studentclass affects field Studentsection; }  // Side effects used to update field value immediatly on screen
 
   determination updateSchoolBasedOnSection on save { field Studentsection; }  // determination with ON SAVE- now this needs to added in draft determine action Prepare
 
@@ -44,7 +44,11 @@ etag master Lastchangedat
     determination updateSchoolBasedOnSection;
   }
 
-//  draft determine action Prepare - executes Determinations and Actions, used to validate the draft data before saving in draft table
+  //  draft determine action Prepare - executes Determinations and Actions, used to validate the draft data before saving in draft table
+
+
+  //action with popup with abstract entity
+  action updateStudentStatus parameter ZA_STUDENT result [1] $self;  //ZA_STUDENT - is abstract entity
 
   mapping for zstudents_u control zstr_students //control structure indicates which fields are changed in update. zstr_students is the structure of boolean type.
     {

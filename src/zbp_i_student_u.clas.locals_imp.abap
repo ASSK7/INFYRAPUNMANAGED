@@ -37,6 +37,8 @@ CLASS lhc_Student DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS updateSchoolBasedOnSection FOR DETERMINE ON SAVE
       IMPORTING keys FOR Student~updateSchoolBasedOnSection.
+    METHODS updateStudentStatus FOR MODIFY
+      IMPORTING keys FOR ACTION Student~updateStudentStatus RESULT result.
 
     METHODS earlynumbering_cba_Course FOR NUMBERING
       IMPORTING entities FOR CREATE Student\_Course.
@@ -189,57 +191,57 @@ CLASS lhc_Student IMPLEMENTATION.
 
   METHOD validatefields.
 
-  "reading the data based on keys
-   READ ENTITIES OF zi_student_u "ENTITY NAME
-   IN LOCAL MODE
-   ENTITY Student
-   ALL FIELDS WITH CORRESPONDING #( keys )
-   RESULT  DATA(lt_results)
-   FAILED DATA(lt_failed)
-   REPORTED DATA(lt_reported).
+    "reading the data based on keys
+    READ ENTITIES OF zi_student_u "ENTITY NAME
+    IN LOCAL MODE
+    ENTITY Student
+    ALL FIELDS WITH CORRESPONDING #( keys )
+    RESULT  DATA(lt_results)
+    FAILED DATA(lt_failed)
+    REPORTED DATA(lt_reported).
 
-   "As for create/update, we are reading one records so READ Table syntax with index used below
-   READ TABLE lt_results ASSIGNING FIELD-SYMBOL(<fs_result>) INDEX 1.
+    "As for create/update, we are reading one records so READ Table syntax with index used below
+    READ TABLE lt_results ASSIGNING FIELD-SYMBOL(<fs_result>) INDEX 1.
 
-   IF <fs_result> IS ASSIGNED.
-   IF <fs_result>-Studentname IS INITIAL OR <fs_result>-Studentage IS INITIAL.
-    APPEND VALUE #( %tky = <fs_result>-%tky ) TO failed-student.
-    "below syntax also be used
-    "failed-student = VALUE #( ( %tky = <fs_result>-%tky ) ).
+    IF <fs_result> IS ASSIGNED.
+      IF <fs_result>-Studentname IS INITIAL OR <fs_result>-Studentage IS INITIAL.
+        APPEND VALUE #( %tky = <fs_result>-%tky ) TO failed-student.
+        "below syntax also be used
+        "failed-student = VALUE #( ( %tky = <fs_result>-%tky ) ).
 
-    "below code is to remove duplicate messages
-    reported-student = VALUE #(
-        ( %tky = <fs_result>-%tky  %state_area = 'VALIDATE_NAME' )
-        ( %tky = <fs_result>-%tky  %state_area = 'VALIDATE_AGE' )
-     ).
+        "below code is to remove duplicate messages
+        reported-student = VALUE #(
+            ( %tky = <fs_result>-%tky  %state_area = 'VALIDATE_NAME' )
+            ( %tky = <fs_result>-%tky  %state_area = 'VALIDATE_AGE' )
+         ).
 
 
 
-    IF <fs_result>-Studentname IS INITIAL.
-    reported-student =  VALUE #( (   %tky = <fs_result>-%tky
-                    %element-studentname = if_abap_behv=>mk-on
+        IF <fs_result>-Studentname IS INITIAL.
+          reported-student =  VALUE #( (   %tky = <fs_result>-%tky
+                          %element-studentname = if_abap_behv=>mk-on
 *                    %state_area = 'VALIDATE_NAME'   "we can give any state area name here
-                    %msg = new_message(
-                             id       = 'SY'
-                             number   = '002'
-                             severity = if_abap_behv_message=>severity-error
-                             v1       = 'First Name should not be empty!') ) ).
-    ENDIF.
+                          %msg = new_message(
+                                   id       = 'SY'
+                                   number   = '002'
+                                   severity = if_abap_behv_message=>severity-error
+                                   v1       = 'First Name should not be empty!') ) ).
+        ENDIF.
 
-    IF <fs_result>-Studentage IS INITIAL.
-        reported-student =  VALUE #( BASE reported-student ( %tky = <fs_result>-%tky   "BASE reported-student -> get all the messages instead of last appended message
-                    %element-studentage = if_abap_behv=>mk-on
+        IF <fs_result>-Studentage IS INITIAL.
+          reported-student =  VALUE #( BASE reported-student ( %tky = <fs_result>-%tky   "BASE reported-student -> get all the messages instead of last appended message
+                      %element-studentage = if_abap_behv=>mk-on
 *                    %state_area = 'VALIDATE_AGE'
-                    %msg = new_message(
-                             id       = 'SY'
-                             number   = '002'
-                             severity = if_abap_behv_message=>severity-error
-                             v1       = 'Age should not be empty!') ) ).
+                      %msg = new_message(
+                               id       = 'SY'
+                               number   = '002'
+                               severity = if_abap_behv_message=>severity-error
+                               v1       = 'Age should not be empty!') ) ).
+        ENDIF.
+
+      ENDIF.
+
     ENDIF.
-
-   ENDIF.
-
-   ENDIF.
 
 
 
@@ -248,67 +250,99 @@ CLASS lhc_Student IMPLEMENTATION.
 
   METHOD updateSectionBasedOnClass.
 
-  "reading the entity
-  READ ENTITIES OF zi_student_u
-  IN LOCAL MODE
-  ENTITY Student
-  FIELDS ( Studentclass )
-  WITH CORRESPONDING #( keys )
-  RESULT DATA(lt_student).
-
-  "updating the value based on student class field
-  READ TABLE lt_student ASSIGNING FIELD-SYMBOL(<fs_student>) INDEX 1. "as getting only one record in table, I'm using read table. we can use loop also.
-  TRANSLATE <fs_student>-Studentclass to UPPER CASE.
-
-  IF <fs_student>-Studentclass EQ 'INTERMEDIATE'.
-
-    MODIFY ENTITIES OF zi_student_u
+    "reading the entity
+    READ ENTITIES OF zi_student_u
     IN LOCAL MODE
     ENTITY Student
-    UPDATE FIELDS ( Studentsection )
-    WITH VALUE #( ( %tky = <fs_student>-%tky  Studentsection = 1 ) ) .
+    FIELDS ( Studentclass )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_student).
+
+    "updating the value based on student class field
+    READ TABLE lt_student ASSIGNING FIELD-SYMBOL(<fs_student>) INDEX 1. "as getting only one record in table, I'm using read table. we can use loop also.
+    TRANSLATE <fs_student>-Studentclass TO UPPER CASE.
+
+    IF <fs_student>-Studentclass EQ 'INTERMEDIATE'.
+
+      MODIFY ENTITIES OF zi_student_u
+      IN LOCAL MODE
+      ENTITY Student
+      UPDATE FIELDS ( Studentsection )
+      WITH VALUE #( ( %tky = <fs_student>-%tky  Studentsection = 1 ) ) .
 
 
-  ELSEIF <fs_student>-Studentclass EQ 'DIPLAMO'.
-    MODIFY ENTITIES OF zi_student_u
-    IN LOCAL MODE
-    ENTITY Student
-    UPDATE FIELDS ( Studentsection )
-    WITH VALUE #( ( %tky = <fs_student>-%tky  Studentsection = 4 ) ) .
-  ENDIF.
+    ELSEIF <fs_student>-Studentclass EQ 'DIPLAMO'.
+      MODIFY ENTITIES OF zi_student_u
+      IN LOCAL MODE
+      ENTITY Student
+      UPDATE FIELDS ( Studentsection )
+      WITH VALUE #( ( %tky = <fs_student>-%tky  Studentsection = 4 ) ) .
+    ENDIF.
 
   ENDMETHOD.
 
   METHOD updateSchoolBasedOnSection.
 
-   "reading the entity
-  READ ENTITIES OF zi_student_u
-  IN LOCAL MODE
-  ENTITY Student
-  FIELDS ( Studentsection )
-  WITH CORRESPONDING #( keys )
-  RESULT DATA(lt_student).
+    "reading the entity
+    READ ENTITIES OF zi_student_u
+    IN LOCAL MODE
+    ENTITY Student
+    FIELDS ( Studentsection )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_student).
 
-  "updating the value based on student class field
-  READ TABLE lt_student ASSIGNING FIELD-SYMBOL(<fs_student>) INDEX 1. "as getting only one record in table, I'm using read table. we can use loop also.
-  TRANSLATE <fs_student>-Studentclass to UPPER CASE.
+    "updating the value based on student class field
+    READ TABLE lt_student ASSIGNING FIELD-SYMBOL(<fs_student>) INDEX 1. "as getting only one record in table, I'm using read table. we can use loop also.
+    TRANSLATE <fs_student>-Studentclass TO UPPER CASE.
 
-  IF <fs_student>-Studentsection EQ 1.
+    IF <fs_student>-Studentsection EQ 1.
+
+      MODIFY ENTITIES OF zi_student_u
+      IN LOCAL MODE
+      ENTITY Student
+      UPDATE FIELDS ( Schoolname )
+      WITH VALUE #( ( %tky = <fs_student>-%tky  Schoolname = 'LPU' ) ) .
+
+
+    ELSEIF <fs_student>-Studentclass EQ 'DIPLAMO'.
+      MODIFY ENTITIES OF zi_student_u
+      IN LOCAL MODE
+      ENTITY Student
+      UPDATE FIELDS ( Schoolname )
+      WITH VALUE #( ( %tky = <fs_student>-%tky  Schoolname = 'KLU' ) ) .
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD updateStudentStatus.
+
+*    READ ENTITIES OF zi_student_u
+*    IN LOCAL MODE
+*    ENTITY Student
+*    FIELDS ( Status )
+*    WITH CORRESPONDING #( keys )
+*    RESULT DATA(lt_students).
+
+    DATA(lv_status) = keys[ 1 ]-%param-status.
 
     MODIFY ENTITIES OF zi_student_u
     IN LOCAL MODE
     ENTITY Student
-    UPDATE FIELDS ( Schoolname )
-    WITH VALUE #( ( %tky = <fs_student>-%tky  Schoolname = 'LPU' ) ) .
+    UPDATE FIELDS ( Status )
+    WITH VALUE #( ( Studentid = keys[ 1 ]-Studentid  Status = keys[ 1 ]-%param-status ) ).
 
-
-  ELSEIF <fs_student>-Studentclass EQ 'DIPLAMO'.
-    MODIFY ENTITIES OF zi_student_u
+    READ ENTITIES OF zi_student_u
     IN LOCAL MODE
     ENTITY Student
-    UPDATE FIELDS ( Schoolname )
-    WITH VALUE #( ( %tky = <fs_student>-%tky  Schoolname = 'KLU' ) ) .
-  ENDIF.
+    FIELDS ( Status )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_students).
+
+    result = VALUE #( FOR <fs_stud> IN lt_students (
+        %tky = <fs_stud>-%tky
+        %param = <fs_stud>
+    )
+     ).
 
   ENDMETHOD.
 
@@ -368,28 +402,28 @@ CLASS lsc_ZI_STUDENT_U IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD check_before_save.
-  "if failed has any entry, then cleanup_finalize method will be called automatically
+    "if failed has any entry, then cleanup_finalize method will be called automatically
 
-   data gt_students_tmp TYPE STANDARD TABLE OF zstudents_u.
+    DATA gt_students_tmp TYPE STANDARD TABLE OF zstudents_u.
 
-   gt_students_tmp = zcl_students_api_clas=>gt_students.
+    gt_students_tmp = zcl_students_api_clas=>gt_students.
 
-   IF gt_students_tmp is not initial.
+    IF gt_students_tmp IS NOT INITIAL.
 
-    LOOP at gt_students_tmp ASSIGNING FIELD-SYMBOL(<ls_student>).
+      LOOP AT gt_students_tmp ASSIGNING FIELD-SYMBOL(<ls_student>).
 
-        if <ls_student>-studentage > 21.
-            APPEND VALUE #( studentid = <ls_student>-studentid ) TO failed-student.
-            APPEND VALUE #( studentid = <ls_student>-studentid
-                            %msg      = new_message_with_text(
-                                            severity = if_abap_behv_message=>severity-error
-                                            text     = 'Student age should not be greater than 21' )
+        IF <ls_student>-studentage > 21.
+          APPEND VALUE #( studentid = <ls_student>-studentid ) TO failed-student.
+          APPEND VALUE #( studentid = <ls_student>-studentid
+                          %msg      = new_message_with_text(
+                                          severity = if_abap_behv_message=>severity-error
+                                          text     = 'Student age should not be greater than 21' )
 
-            ) TO reported-student.
+          ) TO reported-student.
         ENDIF.
-    ENDLOOP.
+      ENDLOOP.
 
-   ENDIF.
+    ENDIF.
 
   ENDMETHOD.
 

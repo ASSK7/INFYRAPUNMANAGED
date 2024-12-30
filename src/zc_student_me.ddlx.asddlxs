@@ -5,18 +5,17 @@
  typeNamePlural: 'Student Details',
  title : {type: #STANDARD, label: 'Student Details', value: 'Studentid'}
 }
-annotate entity ZC_STUDENT
-    with 
+annotate entity ZC_STUDENT with
 {
 
-  @UI.facet: [{ 
+  @UI.facet: [{
         id: 'flight',
         purpose: #STANDARD,
         type: #IDENTIFICATION_REFERENCE,
         label : 'Flight',
         position: 10
      },
-     { 
+     {
       id : 'CourseId',  //table in object page for ZI_COURSE_U CDS VEIW
       purpose: #STANDARD,
       type : #LINEITEM_REFERENCE,
@@ -27,7 +26,9 @@ annotate entity ZC_STUDENT
      ]
 
   @EndUserText.label: 'ID'
-  @UI : { selectionField: [{ position: 10 }], lineItem: [{ position: 10 }], identification: [{ position: 10 }]}
+  @UI : { selectionField: [{ position: 10 }],
+  lineItem: [{ position: 10 },{ type: #FOR_ACTION , dataAction: 'updateStudentStatus', label: 'Update Student Status', position: 10 }],
+  identification: [{ position: 10 }]}
   Studentid;
   @EndUserText.label: 'Name'
   @UI : { selectionField: [{ position: 20 }], lineItem: [{ position: 20 }], identification: [{ position: 20 }]}
@@ -45,13 +46,13 @@ annotate entity ZC_STUDENT
   @UI : { selectionField: [{ position: 60 }], lineItem: [{ position: 60 }], identification: [{ position: 60 }]}
   Schoolname;
   @EndUserText.label: 'Status'
-  @UI : { selectionField: [{ position: 70 }], lineItem: [{ position: 70 }, { type: #FOR_ACTION , dataAction: 'setAdmitted', label : 'Set Admitted' }], 
+  @UI : { selectionField: [{ position: 70 }], lineItem: [{ position: 70 }, { type: #FOR_ACTION , dataAction: 'setAdmitted', label : 'Set Admitted' }],
   identification: [{ position: 70 },{ type: #FOR_ACTION , dataAction: 'setAdmitted', label : 'Set Admitted' }] }
   Status;
   @EndUserText.label: 'Gender'
   @UI : { selectionField: [{ position: 80 }], lineItem: [{ position: 80 }], identification: [{ position: 80 }] }
-  @Consumption.valueHelpDefinition: [{ additionalBinding: [{ element: 'Description' , localElement: 'GenderDesc', usage: #FILTER_AND_RESULT}], 
-  entity : { name: 'ZI_GENDER_U', element: 'Value' }, 
+  @Consumption.valueHelpDefinition: [{ additionalBinding: [{ element: 'Description' , localElement: 'GenderDesc', usage: #FILTER_AND_RESULT}],
+  entity : { name: 'ZI_GENDER_U', element: 'Value' },
   distinctValues: true }]
   Gender;
   @EndUserText.label: 'Gender Description'
@@ -64,8 +65,8 @@ annotate entity ZC_STUDENT
   @EndUserText : { label: 'Fee' }
   @Search.defaultSearchElement: true
   Fee;
- 
-  
-  
+
+
+
 
 }

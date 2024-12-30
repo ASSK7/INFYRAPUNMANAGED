@@ -1,0 +1,8 @@
+@Metadata.layer: #CORE
+annotate entity ZA_STUDENT
+    with 
+{
+    @EndUserText.label: 'Student Status'
+    status;
+    
+}

@@ -18,6 +18,8 @@ use etag
 
   use association _course {create; with draft;}
 
+  use action updateStudentStatus; //action created with Abstract entity
+
 }
 
 define behavior for ZC_COURSEU alias Course
